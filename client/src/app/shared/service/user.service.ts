@@ -55,18 +55,12 @@ export class UserService {
   }
 
   public async verifyCep(cep: string) {
-    const headers = new HttpHeaders({
-      Authorization: localStorage.getItem("token") as string,
-    });
     try {
       return await firstValueFrom(
-        this.http.get<{ address: string }>(
-          this.baseUrl + "/validateCep/" + cep,
-          { headers }
-        )
+        this.http.get<{ address: string }>(this.baseUrl + "/validateCep/" + cep)
       );
     } catch (error: any) {
-      return error.error as { message: string };
+      throw error.error.message;
     }
   }
 }

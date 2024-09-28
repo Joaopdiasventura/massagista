@@ -1,0 +1,6 @@
+<div>
+  <div *ngIf="isLoading || !currentUser"><loading /></div>
+  <div *ngIf="!isLoading && currentUser">
+    <p>Bem vindo: {{ currentUser.name }}</p>
+  </div>
+</div>

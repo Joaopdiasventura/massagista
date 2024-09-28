@@ -1,0 +1,61 @@
+<div class="container">
+  <div *ngIf="isLoading">
+    <loading />
+  </div>
+  <div *ngIf="!isLoading" class="form-container">
+    <div *ngIf="error">
+      <error error="{{ error }}" />
+    </div>
+    <h2>LOGIN</h2>
+    <form [formGroup]="loginForm" (ngSubmit)="login()">
+      <div class="input-container">
+        <label for="email">Email:</label>
+        <custom-input
+          id="email"
+          name="email"
+          type="email"
+          placeholder=""
+          [control]="emailControl"
+        />
+        <div
+          *ngIf="
+            emailControl.invalid && (emailControl.dirty || emailControl.touched)
+          "
+          class="error-message"
+        >
+          <span *ngIf="emailControl.errors?.['required']"
+            >Email é obrigatório.</span
+          >
+          <span *ngIf="emailControl.errors?.['email']"
+            >Formato de email inválido.</span
+          >
+        </div>
+      </div>
+
+      <div class="input-container">
+        <label for="password">Senha:</label>
+        <custom-input
+          id="password"
+          name="password"
+          type="password"
+          placeholder=""
+          [control]="passwordControl"
+        />
+        <div
+          *ngIf="
+            passwordControl.invalid &&
+            (passwordControl.dirty || passwordControl.touched)
+          "
+          class="error-message"
+        >
+          <span *ngIf="passwordControl.errors?.['required']"
+            >Senha é obrigatória.</span
+          >
+        </div>
+      </div>
+
+      <customButton type="submit" label="Entrar" />
+    </form>
+    <a href="/register">não possuo uma conta</a>
+  </div>
+</div>

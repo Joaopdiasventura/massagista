@@ -1,0 +1,126 @@
+<div class="container">
+  <div *ngIf="isLoading">
+    <loading />
+  </div>
+  <div *ngIf="!isLoading" class="form-container">
+    <div *ngIf="error">
+      <error error="{{ error }}" />
+    </div>
+    <h2>CRIE UMA CONTA</h2>
+    <form [formGroup]="registerForm" (ngSubmit)="register()">
+      <div class="input-container">
+        <label for="email">Email:</label>
+        <custom-input
+          id="email"
+          name="email"
+          type="email"
+          [control]="emailControl"
+        />
+        <div *ngIf="isFieldInvalid(emailControl)" class="error-message">
+          <span *ngIf="emailControl.errors?.['required']"
+            >Email é obrigatório.</span
+          >
+          <span *ngIf="emailControl.errors?.['email']"
+            >Formato de email inválido.</span
+          >
+        </div>
+      </div>
+
+      <div class="input-container">
+        <label for="name">Nome:</label>
+        <custom-input
+          id="name"
+          name="name"
+          type="text"
+          [control]="nameControl"
+        />
+        <div *ngIf="isFieldInvalid(nameControl)" class="error-message">
+          <span *ngIf="nameControl.errors?.['required']"
+            >Nome é obrigatório.</span
+          >
+        </div>
+      </div>
+
+      <div class="input-container">
+        <label for="password">Senha:</label>
+        <custom-input
+          id="password"
+          name="password"
+          type="password"
+          [control]="passwordControl"
+        />
+        <div *ngIf="isFieldInvalid(passwordControl)" class="error-message">
+          <span *ngIf="passwordControl.errors?.['required']"
+            >Senha é obrigatória.</span
+          >
+          <span *ngIf="passwordControl.errors?.['minlength']"
+            >A senha deve ter pelo menos 8 caracteres.</span
+          >
+        </div>
+      </div>
+
+      <div class="input-container">
+        <label for="birthDate">Data de nascimento:</label>
+        <custom-input
+          id="birthDate"
+          name="birthDate"
+          type="date"
+          [control]="birthDateControl"
+        />
+        <div *ngIf="isFieldInvalid(birthDateControl)" class="error-message">
+          <span *ngIf="birthDateControl.errors?.['required']"
+            >Data de nascimento é obrigatória.</span
+          >
+        </div>
+      </div>
+
+      <div class="address-container">
+        <div class="input-half">
+          <label for="cep">CEP:</label>
+          <custom-input
+            id="cep"
+            name="cep"
+            type="text"
+            [control]="cepControl"
+          />
+          <div *ngIf="isFieldInvalid(cepControl)" class="error-message">
+            <span *ngIf="cepControl.errors?.['required']"
+              >CEP é obrigatório.</span
+            >
+            <span *ngIf="cepControl.errors?.['pattern']">CEP inválido.</span>
+          </div>
+        </div>
+
+        <div class="input-half">
+          <label for="number">Número:</label>
+          <custom-input
+            id="number"
+            name="number"
+            type="text"
+            [control]="numberControl"
+          />
+          <div *ngIf="isFieldInvalid(numberControl)" class="error-message">
+            <span *ngIf="numberControl.errors?.['required']"
+              >Número é obrigatório.</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <p>{{ address }}</p>
+
+      <div class="input-container">
+        <customButton
+          id="cepButton"
+          type="button"
+          label="Validar CEP"
+          (click)="verifyCep()"
+        />
+      </div>
+
+      <customButton id="submitButton" type="submit" label="Criar Conta" />
+    </form>
+
+    <a href="/login">Possuo uma conta</a>
+  </div>
+</div>

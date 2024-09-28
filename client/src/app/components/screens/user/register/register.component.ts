@@ -106,18 +106,22 @@ export class RegisterComponent {
   }
 
   async verifyCep() {
+    this.isLoading = true;
     if (this.cepControl.value == "") {
       this.cepControl.setErrors({ pattern: true });
+      this.isLoading = false;
       return;
     }
     const result = await this.userService.verifyCep(this.cepControl.value);
-    if ("message" in result) {
+    if (result && "message" in result) {
       this.error = result.message;
       this.address = undefined;
+      this.isLoading = false;
       return;
     }
     this.error = undefined;
     this.address = result.address;
+    this.isLoading = false;
   }
 
   isFieldInvalid(control: FormControl): boolean {

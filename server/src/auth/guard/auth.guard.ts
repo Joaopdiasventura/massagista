@@ -7,7 +7,7 @@ import {
 import { AuthService } from "../auth.service";
 import { UserService } from "../../domain/user/user.service";
 import { Reflector } from "@nestjs/core";
-import { AuthenticatedRequest } from "../../shared/interface/authenticated-request.interface";
+import { AuthenticatedRequest } from "../../shared/models/authenticated-request.interface";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
     const user = await this.userService.findById(_id);
     if (!user) throw new UnauthorizedException("Usuário não encontrado");
     request.user = user;
-    const access = this.reflector.get<string>("access", context.getHandler());    
+    const access = this.reflector.get<string>("access", context.getHandler());
     if (access == "adm" && !user.adm)
       throw new UnauthorizedException("Acesso restrito");
     return true;

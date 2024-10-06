@@ -5,9 +5,10 @@ import { DatabaseConfig } from "./config/database.config";
 import { MongooseModule } from "@nestjs/mongoose";
 import { JwtModule } from "@nestjs/jwt";
 import { UserModule } from "./domain/user/user.module";
-import { ServiceModule } from "./domain/service/service.module";
+import { AppointmentModule } from "./domain/appointment/appointment.module";
 import { ProcedureModule } from "./domain/procedure/procedure.module";
 import { AuthModule } from "./auth/auth.module";
+import { AddressModule } from "./domain/shared/address/address.module";
 
 @Module({
   imports: [
@@ -24,9 +25,10 @@ import { AuthModule } from "./auth/auth.module";
       secret: AppConfig().jwtSecret,
     }),
     UserModule,
-    ServiceModule,
+    AppointmentModule,
     ProcedureModule,
     AuthModule,
+    AddressModule,
   ],
   controllers: [],
   providers: [],

@@ -6,9 +6,7 @@ import {
   Patch,
   Param,
   Delete,
-  NotFoundException,
   UseGuards,
-  ParseIntPipe,
 } from "@nestjs/common";
 import { ProcedureService } from "./procedure.service";
 import { CreateProcedureDto } from "./dto/create-procedure.dto";
@@ -29,44 +27,33 @@ export class ProcedureController {
   }
 
   @UseGuards(AuthGuard)
-  @Access("adm")
   @Get()
   async findAll() {
     return await this.procedureService.findAll();
   }
 
   @UseGuards(AuthGuard)
-  @Access("adm")
-  @Get(":_id")
-  async findById(@Param("_id") _id: string) {
-    try {
-      const procedure = await this.procedureService.findById(_id);
-      if (!procedure)
-        throw new NotFoundException("Procedimento não encontrado");
-      return procedure;
-    } catch (error) {
-      throw new NotFoundException("Procedimento não encontrado");
-    }
+  @Get(":id")
+  async findById(@Param("id") id: string) {
+    return await this.procedureService.findById(id);
   }
 
   @UseGuards(AuthGuard)
   @Access("adm")
-  @Patch(":_id")
+  @Patch(":id")
   async update(
-    @Param("_id") _id: string,
+    @Param("id") id: string,
     @Body() updateProcedureDto: UpdateProcedureDto,
   ) {
-    await this.findById(_id);
-    await this.procedureService.update(_id, updateProcedureDto);
+    await this.procedureService.update(id, updateProcedureDto);
     return { message: "Procedimento atualizado com sucesso" };
   }
 
   @UseGuards(AuthGuard)
   @Access("adm")
-  @Delete(":_id")
-  async remove(@Param("_id", ParseIntPipe) _id: string) {
-    await this.findById(_id);
-    await this.procedureService.remove(_id);
+  @Delete(":id")
+  async remove(@Param("id") id: string) {
+    await this.procedureService.remove(id);
     return { message: "Procedimento excluído com sucesso" };
   }
 }

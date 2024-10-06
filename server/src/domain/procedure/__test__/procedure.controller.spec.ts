@@ -1,6 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { ProcedureController } from "./procedure.controller";
-import { ProcedureService } from "./procedure.service";
+import { ProcedureController } from "../procedure.controller";
+import { ProcedureService } from "../procedure.service";
 
 describe("ProcedureController", () => {
   let controller: ProcedureController;

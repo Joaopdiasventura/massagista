@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsDate, IsEmail, IsString } from "class-validator";
+import { IsDate, IsEmail, IsString, Matches } from "class-validator";
 
 export class CreateUserDto {
   @IsEmail({}, { message: "campo 'email' precisa ser um email válido" })
@@ -10,6 +10,12 @@ export class CreateUserDto {
 
   @IsString({ message: "campo 'password' precisa ser do tipo string" })
   password: string;
+
+  @IsString({ message: "Campo 'cellphone' precisa ser do tipo string" })
+  @Matches(/^[0-9]+$/, {
+    message: "Campo 'cellphone' deve conter apenas números",
+  })
+  cellphone: string;
 
   @IsString({ message: "campo 'address' precisa ser do tipo string" })
   address: string;

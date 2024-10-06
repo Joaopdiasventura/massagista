@@ -1,10 +1,8 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument, ObjectId } from "mongoose";
+import { HydratedDocument, Document } from "mongoose";
 
 @Schema({ versionKey: false })
-export class User {
-  _id: ObjectId;
-
+export class User extends Document {
   @Prop({ unique: true })
   email: string;
 
@@ -13,6 +11,9 @@ export class User {
 
   @Prop()
   password: string;
+
+  @Prop()
+  cellphone: string;
 
   @Prop()
   address: string;

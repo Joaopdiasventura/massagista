@@ -6,11 +6,8 @@ import {
   Patch,
   Param,
   Delete,
-  BadRequestException,
   HttpCode,
-  UnauthorizedException,
   UseGuards,
-  NotFoundException,
   Req,
   UseInterceptors,
 } from "@nestjs/common";
@@ -22,7 +19,7 @@ import { DecodeTokenDto } from "./dto/decode-token.dto";
 import { AuthService } from "../../auth/auth.service";
 import { AuthGuard } from "../../auth/guard/auth.guard";
 import { Access } from "../../auth/decorator/roles.decorator";
-import { AuthenticatedRequest } from "../../shared/interface/authenticated-request.interface";
+import { AuthenticatedRequest } from "../../shared/models/authenticated-request.interface";
 import { FileInterceptor } from "@nestjs/platform-express";
 
 @Controller("user")
@@ -35,15 +32,9 @@ export class UserController {
   @UseInterceptors(FileInterceptor("file"))
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    const existUser = await this.userService.findByEmail(createUserDto.email);
-    if (existUser)
-      throw new BadRequestException("Já existe um usuário com esse email");
-    createUserDto.password = await this.userService.hashPassword(
-      createUserDto.password,
-    );
     const user = await this.userService.create(createUserDto);
     return {
-      token: await this.authService.generateToken(user._id.toString()),
+      token: await this.authService.generateToken(user.id),
       user,
     };
   }
@@ -51,17 +42,9 @@ export class UserController {
   @HttpCode(200)
   @Post("/login")
   async login(@Body() loginUserDto: LoginUserDto) {
-    const user = await this.userService.findByEmail(loginUserDto.email);
-    if (!user) throw new NotFoundException("Email não cadastrado");
-    if (
-      !(await this.userService.comparePasswords(
-        loginUserDto.password,
-        user.password,
-      ))
-    )
-      throw new UnauthorizedException("Senha incorreta");
+    const user = await this.userService.validateLogin(loginUserDto);
     return {
-      token: await this.authService.generateToken(user._id.toString()),
+      token: await this.authService.generateToken(user.id),
       user,
     };
   }
@@ -69,7 +52,7 @@ export class UserController {
   @HttpCode(200)
   @Post("decodeToken")
   async decodeToken(@Body() decodeTokenDto: DecodeTokenDto) {
-    return this.findById(
+    return await this.findById(
       await this.authService.decodeToken(decodeTokenDto.token),
     );
   }
@@ -82,52 +65,28 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard)
-  @Get(":_id")
-  async findById(@Param("_id") _id: string) {
-    try {
-      const user = await this.userService.findById(_id);
-      if (!user) throw new NotFoundException("Usuário não encontrado");
-      return user;
-    } catch (error) {
-      throw new NotFoundException("Usuário não encontrado");
-    }
-  }
-
-  @Get("/validateCep/:cep")
-  async validateCep(@Param("cep") cep: string) {
-    const { results } = await this.userService.verifyCep(cep);
-    if (results.length == 0) throw new BadRequestException("CEP inválido");
-    return { address: results[0].formatted_address };
+  @Get(":id")
+  async findById(@Param("id") id: string) {
+    return await this.userService.findById(id);
   }
 
   @UseGuards(AuthGuard)
-  @Patch(":_id")
+  @Patch(":id")
   async update(
-    @Param("_id") _id: string,
+    @Param("id") id: string,
     @Body() updateUserDto: UpdateUserDto,
     @Req() request: AuthenticatedRequest,
   ) {
-    await this.findById(_id);
-    if (!(request.user._id.toString() == _id || request.user.adm))
-      throw new UnauthorizedException(
-        "Você não tem permissão para atualizar este usuário",
-      );
-
-    return this.userService.update(_id, updateUserDto);
+    this.authService.validatePermission(request.user.id, id, request.user.adm);
+    const user = await this.userService.update(id, updateUserDto);
+    return { message: "Usuário atualizado com sucesso", user };
   }
 
   @UseGuards(AuthGuard)
-  @Delete(":_id")
-  async remove(
-    @Param("_id") _id: string,
-    @Req() request: AuthenticatedRequest,
-  ) {
-    await this.findById(_id);
-    if (!(request.user._id.toString() == _id || request.user.adm))
-      throw new UnauthorizedException(
-        "Você não tem permissão para atualizar este usuário",
-      );
-
-    return { message: await this.userService.remove(_id) };
+  @Delete(":id")
+  async remove(@Param("id") id: string, @Req() request: AuthenticatedRequest) {
+    this.authService.validatePermission(request.user.id, id, request.user.adm);
+    await this.userService.remove(id);
+    return { message: "Usuário deletado com sucesso" };
   }
 }

@@ -6,6 +6,10 @@ import { UserService } from "./../user/user.service";
 import { Appointment } from "./entities/appointment.entity";
 import { ProcedureService } from "../procedure/procedure.service";
 import { randomBytes } from "node:crypto";
+import { ConfigService } from "@nestjs/config";
+import { SchedulerRegistry } from "@nestjs/schedule";
+import { CronJob } from "cron";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 @Injectable()
 export class AppointmentService {
@@ -13,7 +17,24 @@ export class AppointmentService {
     private readonly appointmentRepository: AppointmentRepository,
     private readonly userService: UserService,
     private readonly procedureService: ProcedureService,
+    private readonly configService: ConfigService,
+    private readonly schedulerRegistry: SchedulerRegistry,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  onModuleInit() {
+    const CRON_TIME = this.configService.get<string>("cronTime");
+    const job = new CronJob(
+      CRON_TIME,
+      async  () => this.sendMessage(),
+      null,
+      false,
+      "America/Sao_Paulo",
+    );
+
+    this.schedulerRegistry.addCronJob("ExpiringJob", job);
+    job.start();
+  }
 
   async create(
     createAppointmentDto: CreateAppointmentDto,
@@ -39,6 +60,23 @@ export class AppointmentService {
       await this.appointmentRepository.findByPassword(password);
     if (!password) throw new NotFoundException("Agendamento não encontrado");
     return appointment;
+  }
+
+  async sendMessage() {
+    const appointments =
+      await this.appointmentRepository.findTodaysAppointments();
+    for (const appointment of appointments) {
+      const value = appointment.procedures.reduce(
+        (sum, procedure) => sum + procedure.value,
+        0,
+      );
+      this.eventEmitter.emit("sendMessage", {
+        value,
+        name: appointment.user.name,
+        email: appointment.user.email,
+        cellphone: appointment.user.cellphone,
+      });
+    }
   }
 
   async update(

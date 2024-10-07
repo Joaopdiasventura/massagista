@@ -41,6 +41,30 @@ export class AppointmentRepository {
     return await this.appointmentModel.findOne({ password });
   }
 
+  async findTodaysAppointments(): Promise<Appointment[]> {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    return await this.appointmentModel
+      .find({
+        start: { $gte: startOfToday, $lte: endOfToday },
+      })
+      .populate({
+        path: "user",
+        select: "email name cellphone",
+      })
+      .populate({
+        path: "procedures",
+        model: "Procedure",
+        select: "value",
+      })
+      .sort("user.name start")
+      .exec();
+  }
+
   async update(
     id: string,
     updateAppointmentDto: UpdateAppointmentDto,
